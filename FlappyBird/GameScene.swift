@@ -13,7 +13,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var scrollNode: SKNode!
     var wallNode:SKNode!
     var bird: SKSpriteNode!
-    var flower: SKSpriteNode!
+    var flowerNode: SKNode! //?
 
     //衝突判定カテゴリー
     let birdCategory: UInt32 = 1 << 0  //0...00001
@@ -52,7 +52,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         setupWall()
         setupBird()
         setupFlower() //追加
-        
         setupScoreLabel()
     }
     
@@ -252,14 +251,13 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         //衝突のカテゴリー設定　//ここもいじる！
         bird.physicsBody?.categoryBitMask = birdCategory
-        //? なぜ定義もないのか　　当てられる側はbird 跳ね返る
+        //当てられる側はbird 跳ね返る
         bird.physicsBody?.collisionBitMask = groundCategory | wallCategory
         //衝突検知
         bird.physicsBody?.contactTestBitMask = groundCategory | wallCategory | flowerCategory
         
         //アニメーションを設定
         bird.run(flap)
-        
         
         //スプライトを追加する
         addChild(bird)
@@ -285,9 +283,11 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         
         let createFlowerAnimation = SKAction.run({
+            //壁関連のノードをのせるノードを作成
+            let flower = SKNode() //spriteじゃない
             let sprite = SKSpriteNode(texture: flowerTexture)
             
-          ////////////////////////
+            //yを決定する準備
             let wallTexture = SKTexture(imageNamed: "wall")
             let under = SKSpriteNode(texture: wallTexture)
             //鳥の画像サイズを取得
@@ -300,7 +300,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 x: 0 ,
                 y: under.size.height + slit_length/2
             )
-//            sprite.zPosition = 100 //一番手前になるようにする
+            sprite.zPosition = 100 //一番手前になるようにする
             
             //スプライトに物理演算を設定する
             sprite.physicsBody = SKPhysicsBody(rectangleOf: flowerTexture.size())
@@ -309,18 +309,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
             
             sprite.run(flowerAnimation)
 
-            self.scrollNode.addChild(sprite)
-
+            //スプライトを追加する
+            self.flowerNode.addChild(flower)
         })
         
         //次の花作成までの時間まちのアクションを作成
         let waitAnimation = SKAction.wait(forDuration: 2)
         //花を作成→時間まち→花の作成を無限に繰り返すアクションを作成
         let repeatForeverAnimation = SKAction.repeatForever(SKAction.sequence([createFlowerAnimation,waitAnimation]))
-        flower?.run(repeatForeverAnimation)
-        
+        flowerNode.run(repeatForeverAnimation)
     }
-    
     
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
         if scrollNode.speed > 0 {
@@ -340,10 +338,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         if scrollNode.speed <= 0 {
             return
         }
-        
+        //スコア用の物体と衝突したならば
         if (contact.bodyA.categoryBitMask & scoreCategory) == scoreCategory || (contact.bodyB.categoryBitMask & scoreCategory) == scoreCategory
         {
-            //スコア用の物体と衝突した
+            //1を足す
             print("ScoreUp")
             score += 1
             scoreLabelNode.text = "Score:\(score)"
@@ -356,21 +354,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 userDefaults.set(bestScore, forKey:"BEST")
                 userDefaults.synchronize()
             }
-            //flowerと衝突した
+            //flowerと衝突したならば
         } else if
             (contact.bodyA.categoryBitMask & flowerCategory) == flowerCategory || (contact.bodyB.categoryBitMask & flowerCategory) == flowerCategory
         {
-            //flowerと衝突した
+            //1を足す
             print("ScoreUp")
             score += 1
             scoreLabelNode.text = "Score:\(score)"
-            
-            //衝突のときに消えた //???
-            contact.bodyB.node?.removeFromParent()
-
-            //衝突のときに音なる　//???
-            let playSound = SKAction.playSoundFileNamed("sound", waitForCompletion: false)
-            bird.run(playSound)
             
             //ベストスコア更新か確認する
             var bestScore = userDefaults.integer(forKey: "BEST")
@@ -379,6 +370,14 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 bestScoreLabelNode.text = "BEST Score:\(bestScore)"
                 userDefaults.set(bestScore, forKey:"BEST")
                 userDefaults.synchronize()
+                
+            //衝突のときに消えた //???
+            contact.bodyB.node?.removeFromParent()
+
+            //衝突のときに音なる　//???
+            let playSound = SKAction.playSoundFileNamed("sound", waitForCompletion: false)
+            bird.run(playSound)
+            
             }
             
         } else {
@@ -397,8 +396,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         }
     }
     
-    
-    
     func restart() {
         score = 0
         scoreLabelNode.text = String("Score:\(score)")
@@ -413,7 +410,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bird.speed = 1
         scrollNode.speed = 1
     }
-    
     
     func setupScoreLabel(){
         score = 0
@@ -435,6 +431,4 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bestScoreLabelNode.text = "BEST Score:\(bestScore)"
         self.addChild(bestScoreLabelNode)
     }
-
-
 }
