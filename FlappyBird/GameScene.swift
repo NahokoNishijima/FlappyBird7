@@ -13,7 +13,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var scrollNode: SKNode!
     var wallNode:SKNode!
     var bird: SKSpriteNode!
-    var flowerNode: SKNode! //?
+    var flowerNode: SKNode!
 
     //衝突判定カテゴリー
     let birdCategory: UInt32 = 1 << 0  //0...00001
@@ -46,12 +46,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         wallNode = SKNode()
         scrollNode.addChild(wallNode)
         
+        //花のノード
+        flowerNode = SKNode()
+        scrollNode.addChild(flowerNode)
+        
         //各種スプライトを生成する処理をメソッドに分割
         setupGround()
         setupCloud()
         setupWall()
         setupBird()
-        setupFlower() //追加
+        setupFlower() //追加 アイテム
         setupScoreLabel()
     }
     
