@@ -13,6 +13,7 @@
 		AD20BFA0223C948D00206E7E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AD20BF9F223C948D00206E7E /* Assets.xcassets */; };
 		AD20BFA3223C948D00206E7E /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = AD20BFA1223C948D00206E7E /* LaunchScreen.storyboard */; };
 		AD20BFAB223CFFEC00206E7E /* GameScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD20BFAA223CFFEC00206E7E /* GameScene.swift */; };
+		AD8C2825225CB74400E80A1D /* sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = AD8C2824225CB74400E80A1D /* sound.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +25,7 @@
 		AD20BFA2223C948D00206E7E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		AD20BFA4223C948D00206E7E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AD20BFAA223CFFEC00206E7E /* GameScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameScene.swift; sourceTree = "<group>"; };
+		AD8C2824225CB74400E80A1D /* sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = sound.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +65,7 @@
 				AD20BFA1223C948D00206E7E /* LaunchScreen.storyboard */,
 				AD20BFA4223C948D00206E7E /* Info.plist */,
 				AD20BFAA223CFFEC00206E7E /* GameScene.swift */,
+				AD8C2824225CB74400E80A1D /* sound.mp3 */,
 			);
 			path = FlappyBird;
 			sourceTree = "<group>";
@@ -125,6 +128,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AD8C2825225CB74400E80A1D /* sound.mp3 in Resources */,
 				AD20BFA3223C948D00206E7E /* LaunchScreen.storyboard in Resources */,
 				AD20BFA0223C948D00206E7E /* Assets.xcassets in Resources */,
 				AD20BF9E223C948B00206E7E /* Main.storyboard in Resources */,

@@ -384,10 +384,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         } else if
             contact.bodyA.categoryBitMask == flowerCategory || contact.bodyB.categoryBitMask  == flowerCategory
         {
-            
             //衝突のときに音なる
             //わからない
-            let playSound = SKAction.playSoundFileNamed("sound",waitForCompletion: false)
+            let playSound = SKAction.playSoundFileNamed("sound", waitForCompletion: false)
             self.run(playSound)
             
             //1を足す
@@ -405,7 +404,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 
             //自身を取り除くアクションを生成
             flowerNode.removeAllChildren()
-
+           
                 
             }
             
