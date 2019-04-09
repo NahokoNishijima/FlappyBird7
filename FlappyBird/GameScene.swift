@@ -7,6 +7,7 @@
 //
 
 import SpriteKit
+import AVFoundation
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     
@@ -14,6 +15,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var wallNode:SKNode!
     var bird: SKSpriteNode!
     var flowerNode: SKNode!
+    var SKAudioNode: SKNode!
 
     //衝突判定カテゴリー
     let birdCategory: UInt32 = 1 << 0  //0...00001
@@ -274,7 +276,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         flowerTexture.filteringMode = .linear
         
         //移動する距離を計算
-        let movingDistance = CGFloat(self.frame.size.width + 2.0 * flowerTexture.size().width)
+        let movingDistance = CGFloat(self.frame.size.width + flowerTexture.size().width)
         
         //画面外まで移動するアクションを作成
         let moveFlower = SKAction.moveBy(x: -movingDistance, y: 0, duration: 4)
@@ -285,35 +287,54 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         //2つのアニメーションを順に実行するアクションを作成
         let flowerAnimation = SKAction.sequence([moveFlower,removeFlower])
         
-        
+        ////////////////////////////////////////////
         let createFlowerAnimation = SKAction.run({
             //壁関連のノードをのせるノードを作成
             let flower = SKNode() //spriteじゃない
-            let sprite = SKSpriteNode(texture: flowerTexture)
             
-            //yを決定する準備
+            //フラワーノードの表示する位置を指定する //???
+            flower.position = CGPoint(x: self.frame.size.width + flowerTexture.size().width * 3 , y: 0)
+            flower.zPosition = 100 //一番手前になるようにする
+            
+        /////////////////////////////////
+            //壁の画像を読み込む //wallNodeとは？
             let wallTexture = SKTexture(imageNamed: "wall")
-            let under = SKSpriteNode(texture: wallTexture)
+            wallTexture.filteringMode = .linear
+            
             //鳥の画像サイズを取得
             let birdSize = SKTexture(imageNamed: "bird_a").size()
+            
             //鳥が通り抜ける瞬間の長さを鳥のサイズの３倍とする
             let slit_length = birdSize.height * 3
             
-            //スプライトの表示する位置を指定する
-            sprite.position = CGPoint (
-                x: 0 ,
-                y: under.size.height + slit_length/2
-            )
-            sprite.zPosition = 100 //一番手前になるようにする
+            //瞬間位置の上下の振れ幅をとりのサイズの３倍とする
+            let random_y_range = birdSize.height * 3
             
+            //下の壁のY軸下限位置（中央位置から下方向の最大振れ幅で下の壁を表示する位置）を計算
+            let groundSize = SKTexture(imageNamed: "ground").size()
+            let center_y = groundSize.height + (self.frame.size.height - groundSize.height)/2
+            let under_wall_lowest_y = center_y - slit_length / 2 - wallTexture.size().height / 2 - random_y_range
+            //0からrandom_y_rangeまでのランダム値を生成
+            let random_y = CGFloat.random(in: 0..<random_y_range)
+            
+            //Y軸の下限にランダムな値を足してし下の壁のY座標を決定
+            let under_wall_y = under_wall_lowest_y + random_y
+            
+           //////////////////////////
+    
+            //スプライトの表示する位置を指定する
+            let sprite = SKSpriteNode(texture: flowerTexture)
+            sprite.position = CGPoint(x:0 ,y: under_wall_y + slit_length * 2)
+            sprite.position = CGPoint(x:0 ,y: self.frame.size.height/2)
             //スプライトに物理演算を設定する
             sprite.physicsBody = SKPhysicsBody(rectangleOf: flowerTexture.size())
+            sprite.physicsBody?.isDynamic = false
             sprite.physicsBody?.categoryBitMask = self.flowerCategory //衝突Category
             sprite.physicsBody?.contactTestBitMask = self.birdCategory
             
-            sprite.run(flowerAnimation)
-
             //スプライトを追加する
+            flower.addChild(sprite)
+            sprite.run(flowerAnimation)
             self.flowerNode.addChild(flower)
         })
         
@@ -338,11 +359,12 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     
     //SKPhysicsContactDelegateのメソッド、衝突した時に呼ばれる
     func didBegin(_ contact: SKPhysicsContact) {
+        
         //ゲームオーバーの時は何もしない
         if scrollNode.speed <= 0 {
             return
         }
-        //スコア用の物体と衝突したならば
+        //bodyAかbodyBがscorecategoryと一致するならば
         if (contact.bodyA.categoryBitMask & scoreCategory) == scoreCategory || (contact.bodyB.categoryBitMask & scoreCategory) == scoreCategory
         {
             //1を足す
@@ -358,10 +380,16 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 userDefaults.set(bestScore, forKey:"BEST")
                 userDefaults.synchronize()
             }
-            //flowerと衝突したならば
+        //bodyAかbodyBがflowercategoryと一致するならば
         } else if
-            (contact.bodyA.categoryBitMask & flowerCategory) == flowerCategory || (contact.bodyB.categoryBitMask & flowerCategory) == flowerCategory
+            contact.bodyA.categoryBitMask == flowerCategory || contact.bodyB.categoryBitMask  == flowerCategory
         {
+            
+            //衝突のときに音なる
+            //わからない
+            let playSound = SKAction.playSoundFileNamed("sound",waitForCompletion: false)
+            self.run(playSound)
+            
             //1を足す
             print("ScoreUp")
             score += 1
@@ -375,13 +403,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
                 userDefaults.set(bestScore, forKey:"BEST")
                 userDefaults.synchronize()
                 
-            //衝突のときに消えた //???
-            contact.bodyB.node?.removeFromParent()
+            //自身を取り除くアクションを生成
+            flowerNode.removeAllChildren()
 
-            //衝突のときに音なる　//???
-            let playSound = SKAction.playSoundFileNamed("sound", waitForCompletion: false)
-            bird.run(playSound)
-            
+                
             }
             
         } else {
@@ -410,6 +435,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         bird.zRotation = 0
         
         wallNode.removeAllChildren()
+        flowerNode.removeAllChildren()
         
         bird.speed = 1
         scrollNode.speed = 1
