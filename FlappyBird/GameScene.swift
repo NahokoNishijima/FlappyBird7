@@ -394,7 +394,15 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         
         //自身を取り除くアクションを生成
             //nodeを取得して削除する
+            if contact.bodyA.categoryBitMask == flowerCategory
+            {
             contact.bodyA.node?.removeFromParent()
+            }
+            if contact.bodyB.categoryBitMask == flowerCategory
+            {
+            contact.bodyB.node?.removeFromParent()
+            }
+                
         //1を足す
             print("ScoreUp")
             scoreB += 1
