@@ -25,8 +25,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     let scoreCategory: UInt32 = 1 << 3 //0...01000
     
     //スコア用
-    var score = 0
+    var scoreA = 0
+    var scoreB = 0
     var scoreLabelNode: SKLabelNode!
+    var flowerLabelNode: SKLabelNode!
     var bestScoreLabelNode: SKLabelNode!
     let userDefaults: UserDefaults = UserDefaults.standard
     
@@ -369,43 +371,42 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         {
             //1を足す
             print("ScoreUp")
-            score += 1
-            scoreLabelNode.text = "Score:\(score)"
+            scoreA += 1
+            scoreLabelNode.text = "Score:\(scoreA)"
             
             //ベストスコア更新か確認する
             var bestScore = userDefaults.integer(forKey: "BEST")
-            if score > bestScore {
-                bestScore = score
+            if scoreA + scoreB > bestScore {
+                bestScore = scoreA + scoreB
                 bestScoreLabelNode.text = "BEST Score:\(bestScore)"
                 userDefaults.set(bestScore, forKey:"BEST")
                 userDefaults.synchronize()
             }
+            
         //bodyAかbodyBがflowercategoryと一致するならば
         } else if
             contact.bodyA.categoryBitMask == flowerCategory || contact.bodyB.categoryBitMask  == flowerCategory
         {
-            //衝突のときに音なる
-            //わからない
+
+        //衝突のときに音なる
             let playSound = SKAction.playSoundFileNamed("sound", waitForCompletion: false)
             self.run(playSound)
-            
-            //1を足す
+        
+        //自身を取り除くアクションを生成
+            //nodeを取得して削除する
+            contact.bodyA.node?.removeFromParent()
+        //1を足す
             print("ScoreUp")
-            score += 1
-            scoreLabelNode.text = "Score:\(score)"
+            scoreB += 1
+            flowerLabelNode.text = "Score:\(scoreB)"
             
             //ベストスコア更新か確認する
             var bestScore = userDefaults.integer(forKey: "BEST")
-            if score > bestScore {
-                bestScore = score
+            if scoreA + scoreB > bestScore {
+                bestScore = scoreA + scoreB
                 bestScoreLabelNode.text = "BEST Score:\(bestScore)"
                 userDefaults.set(bestScore, forKey:"BEST")
                 userDefaults.synchronize()
-                
-            //自身を取り除くアクションを生成
-            flowerNode.removeAllChildren()
-           
-                
             }
             
         } else {
@@ -425,8 +426,10 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func restart() {
-        score = 0
-        scoreLabelNode.text = String("Score:\(score)")
+        scoreA = 0
+        scoreLabelNode.text = String("Score:\(scoreA)")
+        scoreB = 0
+        flowerLabelNode.text = String("Score:\(scoreB)")
         
         bird.position = CGPoint(x: self.frame.size.width * 0.2, y: self.frame.size.height * 0.7)
         bird.physicsBody?.velocity = CGVector.zero
@@ -441,18 +444,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     }
     
     func setupScoreLabel(){
-        score = 0
+        scoreA = 0
         scoreLabelNode = SKLabelNode()
         scoreLabelNode.fontColor = UIColor.black
         scoreLabelNode.position = CGPoint(x: 10, y: self.frame.size.height - 60)
         scoreLabelNode.zPosition = 100
         scoreLabelNode.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
-        scoreLabelNode.text = "Score:\(score)"
+        scoreLabelNode.text = "Score:\(scoreA)"
         self.addChild(scoreLabelNode)
+        
+        scoreB = 0
+        flowerLabelNode = SKLabelNode()
+        flowerLabelNode.fontColor = UIColor.black
+        flowerLabelNode.position = CGPoint(x: 10, y: self.frame.size.height - 90)
+        flowerLabelNode.zPosition = 100
+        flowerLabelNode.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
+        flowerLabelNode.text = "Score:\(scoreB)"
+        self.addChild(flowerLabelNode)
         
         bestScoreLabelNode = SKLabelNode()
         bestScoreLabelNode.fontColor = UIColor.black
-        bestScoreLabelNode.position = CGPoint(x: 10, y: self.frame.size.height - 90)
+        bestScoreLabelNode.position = CGPoint(x: 10, y: self.frame.size.height - 130)
         bestScoreLabelNode.zPosition = 100
         bestScoreLabelNode.horizontalAlignmentMode = SKLabelHorizontalAlignmentMode.left
         
